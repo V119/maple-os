@@ -1,0 +1,77 @@
+{
+  "permissions": {
+    "allow": [
+      "Read",
+      "Grep",
+      "Glob",
+      "Bash(cargo check:*)",
+      "Bash(cargo test:*)",
+      "Bash(cargo build:*)",
+      "Bash(cargo run:*)",
+      "Bash(cargo clippy:*)",
+      "Bash(pnpm test:*)",
+      "Bash(pnpm lint:*)",
+      "Bash(pnpm build:*)",
+      "Bash(pnpm dev:*)",
+      "Bash(pnpm typecheck:*)",
+      "Bash(pnpm --filter=* dev:*)",
+      "Bash(pnpm --filter=* build:*)",
+      "Bash(git diff:*)",
+      "Bash(git status:*)",
+      "Bash(git log:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Write(.claude/**)",
+      "Write(core/**)",
+      "Write(server/**)",
+      "Write(apps/**)",
+      "Write(packages/**)",
+      "Write(tests/**)",
+      "Edit(core/**)",
+      "Edit(server/**)",
+      "Edit(apps/**)",
+      "Edit(packages/**)",
+      "Edit(tests/**)"
+    ],
+    "deny": [
+      "Bash(rm -rf:*)",
+      "Bash(curl | bash:*)",
+      "Bash(DROP:*)",
+      "Bash(TRUNCATE:*)",
+      "Bash(git push --force:*)",
+      "Bash(git reset --hard:*)",
+      "Write(.env*)",
+      "Write(migrations/**)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "command": "bash -c 'echo \"[SCALE] 认知工作流提醒: 1.扫描技能 2.确认任务级别(S/M/L/CRITICAL) 3.执行阶段流程\"; echo \"输出格式: [SKILL SCAN] ✓ | [EXPLORE] ✓ | [PLAN] ✓ | ...\"'",
+        "timeout": 5000
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "command": "bash -c 'FILEPATH=\"${CLAUDE_FILE_PATH:-$FILEPATH}\"; if [ -z \"$FILEPATH\" ]; then exit 0; fi; if echo \"$FILEPATH\" | grep -qE \"(migration|\\.db|\\.env|schema)\"; then echo \"[SCALE 🛡️] BLOCKED: 危险文件修改 $FILEPATH — 需要人工确认\"; exit 2; fi; exit 0'",
+        "timeout": 5000
+      },
+      {
+        "matcher": "Write",
+        "command": "bash -c 'FILEPATH=\"${CLAUDE_FILE_PATH:-$FILEPATH}\"; if [ -z \"$FILEPATH\" ]; then exit 0; fi; if echo \"$FILEPATH\" | grep -qE \"(core/|server/|apps/|packages/)\" && ! echo \"$FILEPATH\" | grep -qE \"(test|spec|__tests__)\"; then echo \"[SCALE TDD] ⚠️ 实现文件 $FILEPATH — 请确保有对应测试\"; fi; exit 0'",
+        "timeout": 5000
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "command": "bash -c 'cd \"${CLAUDE_PROJECT_DIR:-.}\" 2>/dev/null; if [ -f .claude/scripts/gates/all.sh ]; then bash .claude/scripts/gates/all.sh || { echo \"[SCALE ✅] 门控未通过，不可声称完成\"; exit 1; }; else echo \"[SCALE ✅] 缺少 .claude/scripts/gates/all.sh，不可声称完成\"; exit 1; fi'",
+        "timeout": 30000
+      }
+    ]
+  }
+}

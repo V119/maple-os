@@ -1,0 +1,93 @@
+{
+  "version": "1.0",
+  "policy": {
+    "discovery": "任务开始时只读取技能名称、说明、触发条件；需要时再打开 SKILL.md。",
+    "install": "安装前必须检查来源、脚本、权限、依赖和 lockfile 变化；禁止 curl | bash。",
+    "execution": "按任务阶段组合最小技能集，避免把无关技能塞进主上下文。",
+    "evidence": "M/L/CRITICAL 任务在 summary.md 记录 skills_used、失败原因和替代方案。"
+  },
+  "entries": [
+    {
+      "id": "graphify",
+      "name": "Graphify",
+      "category": "context",
+      "tier": "recommended",
+      "status": "installed",
+      "sourceRepo": "https://github.com/safishamsi/graphify",
+      "trigger": "项目结构复杂时",
+      "safety": "trusted"
+    },
+    {
+      "id": "systematic-debugging",
+      "name": "Systematic Debugging (Superpowers)",
+      "category": "context",
+      "tier": "core",
+      "status": "reference",
+      "trigger": "修复bug连续2次失败",
+      "safety": "review-before-install"
+    },
+    {
+      "id": "brainstorming",
+      "name": "Brainstorming (Superpowers)",
+      "category": "planning",
+      "tier": "recommended",
+      "status": "reference",
+      "trigger": "设计阶段开始时",
+      "safety": "review-before-install"
+    },
+    {
+      "id": "freeze-guard",
+      "name": "Freeze Guard (gstack)",
+      "category": "execution",
+      "tier": "core",
+      "status": "reference",
+      "trigger": "执行阶段开始前",
+      "safety": "review-before-install"
+    },
+    {
+      "id": "tdd",
+      "name": "TDD (Superpowers)",
+      "category": "quality",
+      "tier": "core",
+      "status": "reference",
+      "trigger": "写任何新代码时",
+      "safety": "review-before-install"
+    },
+    {
+      "id": "verification",
+      "name": "Verification (Superpowers)",
+      "category": "quality",
+      "tier": "core",
+      "status": "reference",
+      "trigger": "声称完成前必须验证",
+      "safety": "review-before-install"
+    },
+    {
+      "id": "qa",
+      "name": "QA (gstack)",
+      "category": "quality",
+      "tier": "core",
+      "status": "reference",
+      "trigger": "功能开发完成后",
+      "safety": "review-before-install"
+    },
+    {
+      "id": "review",
+      "name": "Review (gstack)",
+      "category": "quality",
+      "tier": "recommended",
+      "status": "reference",
+      "trigger": "提交PR前",
+      "safety": "review-before-install"
+    },
+    {
+      "id": "ship",
+      "name": "Ship (gstack)",
+      "category": "deployment",
+      "tier": "recommended",
+      "status": "reference",
+      "trigger": "准备发布时",
+      "safety": "review-before-install"
+    }
+  ]
+}

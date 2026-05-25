@@ -1,0 +1,91 @@
+{
+  "version": "1.0",
+  "generatedAt": "2026-05-25T00:00:00.000Z",
+  "project": {
+    "name": "MapleOS",
+    "type": "rust-system",
+    "stack": "rust",
+    "techStack": [
+      "Rust",
+      "Tokio",
+      "Axum",
+      "SQLite",
+      "Next.js",
+      "React",
+      "TypeScript",
+      "Tailwind CSS",
+      "Tauri",
+      "Docker"
+    ]
+  },
+  "agent": {
+    "id": "claude-code",
+    "supportLevel": "full",
+    "configType": "claude-code",
+    "capability": {
+      "supportLevel": "full",
+      "memoryFiles": ["CLAUDE.md"],
+      "configFiles": [".claude/settings.json"],
+      "supportsHooks": true,
+      "supportsMcp": true,
+      "supportsPermissions": true,
+      "supportsSkills": true,
+      "supportsStopHook": true
+    }
+  },
+  "workflow": {
+    "scenarioMode": "standard",
+    "enableTDD": true,
+    "enableHooks": true,
+    "enableMCP": false,
+    "enableKnowledgeDoc": true
+  },
+  "skills": {
+    "selected": [
+      "graphify",
+      "systematic-debugging",
+      "brainstorming",
+      "freeze-guard",
+      "tdd",
+      "verification",
+      "qa",
+      "review",
+      "ship"
+    ],
+    "supported": [
+      "graphify",
+      "systematic-debugging",
+      "brainstorming",
+      "freeze-guard",
+      "tdd",
+      "verification",
+      "qa",
+      "review",
+      "ship"
+    ],
+    "unsupported": []
+  },
+  "mustRun": [
+    "bash .claude/scripts/validate-config.sh",
+    "bash .claude/scripts/tests/run.sh",
+    "bash .claude/scripts/gates/all.sh --dry-run",
+    "bash .claude/scripts/workflow/verify.sh default"
+  ],
+  "qualityGovernance": {
+    "contract": ".claude/scale/quality-contract.json",
+    "skillRegistry": ".claude/scale/skills-registry.json",
+    "templates": [
+      "docs/workflow/templates/mini-prd.md",
+      "docs/workflow/templates/task-summary.md",
+      "docs/workflow/templates/vibe-prompts.md",
+      "docs/workflow/templates/resource-governance.md",
+      "docs/standards/ENGINEERING_RULES.md"
+    ],
+    "rule": "Rules in agent docs are advisory unless backed by commands, gates, templates, or explicit evidence requirements."
+  },
+  "honestyRules": [
+    "Do not claim tests passed unless the command was actually run and exited 0.",
+    "Dry-run does not prove quality gates passed.",
+    "Skipped or missing tools must be listed as unverified items."
+  ]
+}

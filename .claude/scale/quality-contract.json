@@ -1,0 +1,134 @@
+{
+  "version": "1.0",
+  "project": {
+    "name": "MapleOS",
+    "type": "rust-system",
+    "stack": "rust",
+    "techStack": [
+      "Rust",
+      "Tokio",
+      "Axum",
+      "SQLite",
+      "Next.js",
+      "React",
+      "TypeScript",
+      "Tailwind CSS",
+      "Tauri",
+      "Docker"
+    ]
+  },
+  "agent": {
+    "id": "claude-code",
+    "scenarioMode": "standard"
+  },
+  "sourceOfTruth": {
+    "agentEntry": "CLAUDE.md",
+    "workflowState": ".claude/scale/workflow.json",
+    "runtimeCommands": ".claude/agent/project.json",
+    "qualityContract": ".claude/scale/quality-contract.json",
+    "skillRegistry": ".claude/scale/skills-registry.json"
+  },
+  "taskLevels": [
+    {
+      "level": "S",
+      "intent": "单个文件小改、注释、文案、低风险配置。",
+      "requiredArtifacts": ["final response evidence"],
+      "requiredVerification": ["cargo check affected crate, or relevant command only"]
+    },
+    {
+      "level": "M",
+      "intent": "普通功能、bugfix、2-5 个文件的行为变化。",
+      "requiredArtifacts": ["explore.md", "plan.md", "verification.md", "summary.md"],
+      "requiredVerification": ["cargo clippy --all-targets -- -D warnings", "cargo test --all-targets", "pnpm typecheck"]
+    },
+    {
+      "level": "L",
+      "intent": "跨模块、架构、数据模型、迁移或高影响重构。",
+      "requiredArtifacts": ["mini-prd.md when user-facing", "explore.md", "plan.md", "review.md", "verification.md", "summary.md"],
+      "requiredVerification": ["cargo build -p mapleos-server", "cargo clippy --all-targets -- -D warnings", "cargo test --all-targets", "pnpm build", "pnpm lint", "pnpm typecheck"]
+    },
+    {
+      "level": "CRITICAL",
+      "intent": "认证、权限、数据库schema、迁移、外部集成。",
+      "requiredArtifacts": ["mini-prd.md", "rollback-plan", "security-review", "verification.md", "summary.md"],
+      "requiredVerification": ["cargo build -p mapleos-server", "cargo clippy --all-targets -- -D warnings", "cargo test --all-targets", "pnpm build", "pnpm lint", "pnpm typecheck", "cargo audit"]
+    }
+  ],
+  "verificationProfiles": [
+    {
+      "id": "fast",
+      "required": ["cargo test --all-targets"],
+      "optional": ["cargo clippy --all-targets -- -D warnings"],
+      "successRule": "只用于 S 级或局部验证，不能代表发布可用。"
+    },
+    {
+      "id": "default",
+      "required": ["cargo clippy --all-targets -- -D warnings", "cargo test --all-targets", "pnpm typecheck"],
+      "optional": ["cargo build -p mapleos-server", "pnpm build"],
+      "successRule": "M 级默认闭环，失败必须记录原因和修复循环。"
+    },
+    {
+      "id": "release",
+      "required": ["cargo build -p mapleos-server", "cargo clippy --all-targets -- -D warnings", "cargo test --all-targets", "pnpm build", "pnpm lint", "pnpm typecheck"],
+      "optional": ["coverage profile", "security profile", "e2e profile"],
+      "successRule": "发版前必须全部真实运行并在 verification.md 记录退出码。"
+    }
+  ],
+  "skillPolicy": {
+    "mode": "progressive-disclosure",
+    "maxAlwaysVisible": 24,
+    "installSafety": [
+      "只从可信仓库或已审查来源安装。",
+      "安装前检查脚本、二进制、网络下载、postinstall、权限和 license。",
+      "优先固定版本或 commit；禁止无审查执行 curl | bash。"
+    ],
+    "usageEvidence": [
+      "说明为什么选这些 skills、MCP 或 CLI。",
+      "记录实际调用的工具和输出证据。",
+      "技能失败时记录失败原因和降级方案。"
+    ]
+  },
+  "resourceGovernance": [
+    {
+      "kind": "canonical-docs",
+      "examples": ["README.md", "CLAUDE.md", "docs/architecture/**", "docs/standards/**"],
+      "gitPolicy": "commit",
+      "retention": "long-lived",
+      "updateTrigger": "架构、模块关系、规范、命令或用户路径变化时更新。"
+    },
+    {
+      "kind": "task-artifacts",
+      "examples": ["docs/worklog/tasks/<task>/*.md"],
+      "gitPolicy": "commit-summary-only",
+      "retention": "task-lifetime",
+      "updateTrigger": "M/L/CRITICAL 任务执行和交付时维护，完成后保留 summary 与关键证据。"
+    },
+    {
+      "kind": "generated-evidence",
+      "examples": ["screenshots", "videos", "trace logs", "e2e reports"],
+      "gitPolicy": "ignore-by-default",
+      "retention": "evidence-window",
+      "updateTrigger": "只在审计、回归复现或发布证据需要时保留。"
+    },
+    {
+      "kind": "temporary-work-files",
+      "examples": ["tmp/**", ".agent/logs/**", "one-off scripts"],
+      "gitPolicy": "ignore-by-default",
+      "retention": "short-lived",
+      "updateTrigger": "任务结束前清理或沉淀为正式脚本/文档。"
+    },
+    {
+      "kind": "large-media-assets",
+      "examples": ["design videos", "audio", "large datasets"],
+      "gitPolicy": "external-store",
+      "retention": "long-lived",
+      "updateTrigger": "通过外部资产库管理，git 中只保留索引、用途和版本。"
+    }
+  ],
+  "engineeringRedLines": [
+    "不得声称未运行的验证通过。",
+    "不得把临时日志、截图、视频、抓包和一次性脚本默认提交到 git。",
+    "不得在日志、文档、测试报告中输出 token、密码、手机号、身份证、密钥和连接串。",
+    "不得绕过项目的 ORM、框架、日志、错误处理、安全和 UI 规范。"
+  ]
+}

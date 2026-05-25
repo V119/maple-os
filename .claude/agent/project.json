@@ -1,0 +1,114 @@
+{
+  "version": "1.0",
+  "stack": "rust",
+  "coverage_threshold": 80,
+  "commands": {
+    "dev": "pnpm dev",
+    "build": "cargo build -p mapleos-server && pnpm build",
+    "test": "cargo test --all-targets",
+    "lint": "cargo clippy --all-targets -- -D warnings",
+    "typecheck": "pnpm typecheck",
+    "coverage": "cargo test --all-targets",
+    "security": "cargo audit || true",
+    "e2e": "pnpm test:e2e"
+  },
+  "required_tools": {
+    "build": ["cargo", "pnpm"],
+    "lint": ["cargo"],
+    "test": ["cargo"],
+    "typecheck": ["pnpm"],
+    "coverage": ["cargo"],
+    "security": ["cargo"],
+    "e2e": ["pnpm", "playwright"]
+  },
+  "service_matrix": [
+    {
+      "id": "rust",
+      "directory": ".",
+      "stack": "rust",
+      "role": "backend",
+      "default": true,
+      "commands": {
+        "build": "cargo build -p mapleos-server",
+        "test": "cargo test --all-targets",
+        "lint": "cargo clippy --all-targets -- -D warnings",
+        "typecheck": "cargo check --all-targets",
+        "coverage": "cargo test --all-targets",
+        "security": "cargo audit || true"
+      }
+    },
+    {
+      "id": "frontend",
+      "directory": ".",
+      "stack": "node",
+      "role": "frontend",
+      "default": false,
+      "commands": {
+        "build": "pnpm build",
+        "test": "pnpm test:e2e",
+        "lint": "pnpm lint",
+        "typecheck": "pnpm typecheck",
+        "dev": "pnpm dev"
+      }
+    }
+  ],
+  "verification_profiles": {
+    "fast": {
+      "id": "fast",
+      "description": "Small change profile. Runs only Rust tests.",
+      "services": ["rust"],
+      "required": ["test"],
+      "optional": ["lint"]
+    },
+    "default": {
+      "id": "default",
+      "description": "Normal M-level profile. Rust lint+test + frontend typecheck.",
+      "services": ["rust", "frontend"],
+      "required": ["lint", "test", "typecheck"],
+      "optional": ["build", "coverage", "security", "e2e"]
+    },
+    "release": {
+      "id": "release",
+      "description": "Release profile. Full build, lint, test, typecheck, and E2E.",
+      "services": ["rust", "frontend"],
+      "required": ["build", "lint", "test", "typecheck"],
+      "optional": ["coverage", "security", "e2e"]
+    }
+  },
+  "stacks": {
+    "rust": {
+      "detect": ["Cargo.toml"],
+      "commands": {
+        "lint": "cargo clippy --all-targets -- -D warnings",
+        "test": "cargo test --all-targets",
+        "typecheck": "cargo check --all-targets",
+        "coverage": "cargo test --all-targets",
+        "security": "cargo audit || true"
+      },
+      "required_tools": {
+        "lint": ["cargo"],
+        "test": ["cargo"],
+        "typecheck": ["cargo"],
+        "coverage": ["cargo"],
+        "security": ["cargo"]
+      }
+    },
+    "node": {
+      "detect": ["package.json"],
+      "commands": {
+        "lint": "pnpm run lint",
+        "test": "pnpm test",
+        "typecheck": "pnpm typecheck",
+        "coverage": "pnpm run coverage",
+        "security": "pnpm audit --prod"
+      },
+      "required_tools": {
+        "lint": ["pnpm"],
+        "test": ["pnpm"],
+        "typecheck": ["pnpm"],
+        "coverage": ["pnpm"],
+        "security": ["pnpm"]
+      }
+    }
+  }
+}
