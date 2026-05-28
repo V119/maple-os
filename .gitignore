@@ -36,3 +36,5 @@ logs/
 *.db-wal
 
 .claude
+.npmrc
+apps/desktop/src-tauri/binaries/*
